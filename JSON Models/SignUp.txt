@@ -1,0 +1,10 @@
+{
+    "UserRole": "StandardUser",
+    "FullName": "FullName",
+    "ID":"ID",
+    "Username": "Username",
+    "BirthDate": "BirthDate",
+    "Gender": "Gender",
+    "Email": "Email",
+    "Password": "Password"
+}

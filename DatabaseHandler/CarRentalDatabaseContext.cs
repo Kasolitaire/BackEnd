@@ -37,7 +37,7 @@ namespace DatabaseHandler
 
             modelBuilder.Entity<RentalOrderDetail>(entity =>
             {
-                entity.HasNoKey();
+                entity.HasKey(e => e.OrderId);
 
                 entity.Property(e => e.DateOfficiallyReturned).HasMaxLength(50);
 
