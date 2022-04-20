@@ -14,7 +14,6 @@ namespace BackEnd.Controllers
         [HttpPost("[action]")]
         public IActionResult PostNewUser([FromBody] User newUser)
         {
-            //Need to implement fully
             CarRentalDatabaseContext databaseInteraction = new CarRentalDatabaseContext();
             if (null != databaseInteraction.Users.FirstOrDefault(row => row.Username == newUser.Username || row.Email == newUser.Email))
             {
