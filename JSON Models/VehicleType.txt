@@ -1,0 +1,8 @@
+{
+    "BrandName":"BrandName",
+    "Model": "Model",
+    "CostPerDay": 100,
+    "CostPerDayDelayed": 100,
+    "DateManufactured": "DateManufactured",
+    "Gear": "Gear"
+}
