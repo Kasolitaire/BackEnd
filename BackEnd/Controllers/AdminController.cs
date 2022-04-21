@@ -63,11 +63,69 @@ namespace BackEnd.Controllers
             }
         }
 
+        [HttpPut("[action]/{OrderID}")]
+        public IActionResult UpdateOrder(int OrderID, [FromBody] RentalOrderDetail updatedOrder)
+        {
+            using (CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext())
+            {
+                RentalOrderDetail originalOrder = dbInteraction.RentalOrderDetails.FirstOrDefault(order => order.OrderId == OrderID);
+                if (originalOrder != null)
+                {
+                    updatedOrder.OrderId = originalOrder.OrderId;
+                    dbInteraction.Entry(originalOrder).CurrentValues.SetValues(updatedOrder);
+                    dbInteraction.SaveChanges();
+                    return Ok(updatedOrder);
+                }
+                else
+                {
+                    return NoContent();
+                }
+            }
+        }
 
+        [HttpPut("[action]/{VehicleTypeID}")]
+        public IActionResult UpdateVehicleType(int VehicleTypeID, [FromBody] VehicleType updatedVehicleType)
+        {
+            using (CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext())
+            {
+                VehicleType originalVehicleType = dbInteraction.VehicleTypes.FirstOrDefault(type => type.VehicleTypeId == VehicleTypeID);
+                if (originalVehicleType != null)
+                {
+                    updatedVehicleType.VehicleTypeId = originalVehicleType.VehicleTypeId;
+                    dbInteraction.Entry(originalVehicleType).CurrentValues.SetValues(updatedVehicleType);
+                    dbInteraction.SaveChanges();
+                    return Ok(updatedVehicleType);
+                }
+                else
+                {
+                    return NoContent();
+                }
+            }
+        }
+
+        [HttpPut("[action]/{VehicleID}")]
+        public IActionResult UpdateVehicle(int VehicleID, [FromBody] VehicleInventory updatedVehicle)
+        {
+            using (CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext())
+            {
+                VehicleInventory originalVehicleType = dbInteraction.VehicleInventories.FirstOrDefault(vehicle => vehicle.VehicleId == VehicleID);
+                if (originalVehicleType != null)
+                {
+                    updatedVehicle.VehicleId = originalVehicleType.VehicleId;
+                    dbInteraction.Entry(originalVehicleType).CurrentValues.SetValues(updatedVehicle);
+                    dbInteraction.SaveChanges();
+                    return Ok(updatedVehicle);
+                }
+                else
+                {
+                    return NoContent();
+                }
+            }
+        }
 
 
         // DELETE api/<AdminController>/5
-        [HttpDelete("{id}", Name = "bob")]
+        [HttpDelete("{id}")]
         public void Delete(int id)
         {
         }
