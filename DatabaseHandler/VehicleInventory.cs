@@ -14,7 +14,5 @@ namespace DatabaseHandler
         public bool Operational { get; set; }
         public bool Available { get; set; }
         public string SerialNumber { get; set; }
-
-        public virtual VehicleType VehicleType { get; set; }
     }
 }

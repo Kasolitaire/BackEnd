@@ -39,15 +39,13 @@ namespace DatabaseHandler
             {
                 entity.HasKey(e => e.OrderId);
 
+                entity.Property(e => e.OrderId).HasColumnName("OrderID");
+
                 entity.Property(e => e.DateOfficiallyReturned).HasMaxLength(50);
 
                 entity.Property(e => e.DropOffDate)
                     .IsRequired()
                     .HasMaxLength(50);
-
-                entity.Property(e => e.OrderId)
-                    .ValueGeneratedOnAdd()
-                    .HasColumnName("OrderID");
 
                 entity.Property(e => e.PickUpDate)
                     .IsRequired()
@@ -112,12 +110,6 @@ namespace DatabaseHandler
                     .HasMaxLength(50);
 
                 entity.Property(e => e.VehicleTypeId).HasColumnName("VehicleTypeID");
-
-                entity.HasOne(d => d.VehicleType)
-                    .WithMany(p => p.VehicleInventories)
-                    .HasForeignKey(d => d.VehicleTypeId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_VehicleInventory_VehicleType");
             });
 
             modelBuilder.Entity<VehicleType>(entity =>
