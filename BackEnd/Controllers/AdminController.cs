@@ -11,9 +11,9 @@ namespace BackEnd.Controllers
     [ApiController]
     public class AdminController : ControllerBase
     {
-
         // GET Admin>/<TableYouWant>
         [HttpGet("{requestedTable}")]
+        //should move this part to a different controller, required for more than just admin
         public IActionResult GetRequestedTable(string requestedTable)
         {
             requestedTable = requestedTable.ToUpper();
@@ -122,7 +122,7 @@ namespace BackEnd.Controllers
                 }
             }
         }
-
+        //Need to implement delete for admin
 
         // DELETE api/<AdminController>/5
         [HttpDelete("{id}")]
