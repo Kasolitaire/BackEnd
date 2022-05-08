@@ -30,7 +30,7 @@ namespace BackEnd.Controllers
             }
         }
 
-        //Get: /Vehicle/GetAllVehicleTypes
+        //Get: /Vehicle/GetAllAvailableVehicleTypes
         [HttpGet("[action]")]
         //Returns all the vehicle types
         public IActionResult GetAllAvailableVehicleTypes() 
