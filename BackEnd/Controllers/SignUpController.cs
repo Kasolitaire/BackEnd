@@ -10,20 +10,23 @@ namespace BackEnd.Controllers
     [ApiController]
     public class SignUpController : ControllerBase
     {
-        // POST SignUp/PostNewUser
+        // POST /SignUp/PostNewUser
         [HttpPost("[action]")]
         public IActionResult PostNewUser([FromBody] User newUser)
         {
-            CarRentalDatabaseContext databaseInteraction = new CarRentalDatabaseContext();
-            if (null != databaseInteraction.Users.FirstOrDefault(row => row.Username == newUser.Username || row.Email == newUser.Email))
+            using (CarRentalDatabaseContext databaseInteraction = new CarRentalDatabaseContext()) 
             {
-                return NotFound("User already exists");
-            }
-            else
-            {
-                databaseInteraction.Users.Add(newUser);
-                databaseInteraction.SaveChanges();
-                return Created("User was created", newUser);
+                if (null != databaseInteraction.Users.FirstOrDefault(row => row.Username == newUser.Username || row.Email == newUser.Email))
+                {
+                    return NotFound("User with same email or user-name already exists");
+                }
+                else
+                {
+                    newUser.UserRole = "standard";
+                    databaseInteraction.Users.Add(newUser);
+                    databaseInteraction.SaveChanges();
+                    return Created("User was created", newUser);
+                }
             }
         }
     }
