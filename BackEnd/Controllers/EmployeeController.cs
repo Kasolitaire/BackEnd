@@ -57,7 +57,7 @@ namespace BackEnd.Controllers
                 if (matchingVehicle == null || matchingVehicle.Available == true) return StatusCode(404, "Vehicle was already returned");
                 matchingVehicle.Available = true;
 
-                RentalOrderDetail matchingOrder = DBInteraction.RentalOrderDetails.FirstOrDefault(order => order.SerialNumber == returnedOrder.SerialNumber && order.DateOfficiallyReturned == null);
+                RentalOrderDetail matchingOrder = DBInteraction.RentalOrderDetails.FirstOrDefault(order => order.SerialNumber == returnedOrder.SerialNumber && (order.DateOfficiallyReturned == null || order.DateOfficiallyReturned == ""));
                 if(matchingVehicle == null || returnedOrder.DateOfficiallyReturned == null) return StatusCode(404);
 
                 matchingOrder.DateOfficiallyReturned = returnedOrder.DateOfficiallyReturned;
