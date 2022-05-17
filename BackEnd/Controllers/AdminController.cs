@@ -39,6 +39,7 @@ namespace BackEnd.Controllers
         {
             using (CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext()) 
             {
+                newOrder.OrderId = 0;
                 VehicleInventory matchingVehicle = dbInteraction.VehicleInventories.FirstOrDefault(vehicle => vehicle.SerialNumber == newOrder.SerialNumber);
                 if (matchingVehicle == null) return StatusCode(404, "Order must correspond to vehicle with a matching serial number");
 
