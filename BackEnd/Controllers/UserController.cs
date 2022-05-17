@@ -11,31 +11,44 @@ namespace BackEnd.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        // GET: /User
+        // GET: /User/<int>
         [HttpGet("{userID}")]
         public IActionResult GetUserOrders(int userID)
         {
-            CarRentalDatabaseContext DBInteraction = new CarRentalDatabaseContext();
-            List<RentalOrderDetail> userOrdersList = DBInteraction.RentalOrderDetails.Where(order => order.UserId == userID).ToList();
-            if (userOrdersList.Count == 0)
+            using (CarRentalDatabaseContext DBInteraction = new CarRentalDatabaseContext()) 
             {
-                return NotFound();
-            }
-            else
-            {
-                return Ok(userOrdersList);
+                List<RentalOrderDetail> userOrdersList = DBInteraction.RentalOrderDetails.Where(order => order.UserId == userID).ToList();
+                if (userOrdersList.Count == 0)
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    return Ok(userOrdersList);
+                }
             }
         }
 
-        // POST /User/PostNewOrder
-        [HttpPost("[action]")]
-        public IActionResult PostNewOrder([FromBody] RentalOrderDetail newOrder)
-        {
-            CarRentalDatabaseContext DBInteraction = new CarRentalDatabaseContext();
-            DBInteraction.RentalOrderDetails.Add(newOrder);
-            DBInteraction.SaveChanges();
-            //Not sure what to return yet
-            return Created("undecided", newOrder);
+        // POST /User/PostNewOrder,<int>
+        [HttpPost("[action],{vehicleID}")]
+        public IActionResult PostNewOrder([FromBody] RentalOrderDetail newOrder, int vehicleID)
+        {   
+            using (CarRentalDatabaseContext DBInteraction = new CarRentalDatabaseContext())
+            {
+                VehicleInventory matchingVehicle = DBInteraction.VehicleInventories.FirstOrDefault<VehicleInventory>(vehicle => vehicle.VehicleId == vehicleID);
+                if (matchingVehicle.Available == true) 
+                {
+                    matchingVehicle.Available = false;
+                    DBInteraction.RentalOrderDetails.Add(newOrder);
+                    DBInteraction.SaveChanges();
+                    //Not sure what to return yet
+                    return Created("undecided", newOrder);
+                }
+                else
+                {
+                    return StatusCode(500);
+                }
+            }
         }
     }
 }
