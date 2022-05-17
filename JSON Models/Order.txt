@@ -1,7 +1,0 @@
-{
-    "PickUpDate": "PickUpDate",
-    "DropOffDate":"DropOffDate",
-    "DateOfficiallyReturned": "DateOfficiallyReturned",
-    "UserId": 1,
-    "SerialNumber": "SerialNumber"
-}

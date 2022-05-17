@@ -13,12 +13,11 @@ namespace BackEnd.Controllers
     {
         // GET Admin>/<TableYouWant>
         [HttpGet("{requestedTable}")]
-        //should move this part to a different controller, required for more than just admin
         public IActionResult GetRequestedTable(string requestedTable)
         {
             requestedTable = requestedTable.ToUpper();
+
             CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext();
-            // Maybe add NoContent if the table is empty
             switch (requestedTable)
             {
                 case "USERS":
@@ -30,25 +29,70 @@ namespace BackEnd.Controllers
                 case "VEHICLEINVENTORY":
                     return Ok(dbInteraction.VehicleInventories);
                 default:
-                    return BadRequest();
+                    return StatusCode(404, "Table doesn't exist");
             }
         }
 
-        // POST api/<AdminController>
-        [HttpPost]
-        public void Post([FromBody] string value)
+        // POST /Admin/PostNewOrder
+        [HttpPost("[action]")]
+        public IActionResult PostNewOrder([FromBody] RentalOrderDetail newOrder)
         {
-        }
-
-        ///Admin/UpdateUser/<UserID>
-        [HttpPut("[action]/{UserID}")]
-        public IActionResult UpdateUser(int UserID, [FromBody] User updatedUser)
-        {
-            //context.Entry(temp).CurrentValues.SetValues(order);
-            //context.SaveChanges();
             using (CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext()) 
             {
-                User originalUser = dbInteraction.Users.FirstOrDefault(user => user.UserId == UserID);
+                VehicleInventory matchingVehicle = dbInteraction.VehicleInventories.FirstOrDefault(vehicle => vehicle.SerialNumber == newOrder.SerialNumber);
+                if (matchingVehicle == null) return StatusCode(404, "Order must correspond to vehicle with a matching serial number");
+
+                User matchingUser = dbInteraction.Users.FirstOrDefault(user => user.UserId == newOrder.UserId);
+                if (matchingUser == null) return StatusCode(404, "Order must correspond to a user with a matching UserID");
+
+                dbInteraction.RentalOrderDetails.Add(newOrder);
+                dbInteraction.SaveChanges();
+
+                return Ok(newOrder);
+            }
+        }
+
+        // POST /Admin/PostNewVehicle
+        [HttpPost("[action]")]
+        public IActionResult PostNewVehicle([FromBody] VehicleInventory newVehicle) 
+        {
+            using (CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext()) 
+            {
+                newVehicle.VehicleId = 0;
+
+                VehicleInventory matchingVehicle = dbInteraction.VehicleInventories.FirstOrDefault(vehicle => vehicle.SerialNumber == newVehicle.SerialNumber);
+                if (matchingVehicle != null) return StatusCode(404, "Cannot have two vehicles with the same serial number");
+
+                VehicleType matchingVehicleType = dbInteraction.VehicleTypes.FirstOrDefault(type => type.VehicleTypeId == newVehicle.VehicleTypeId);
+                if (matchingVehicleType == null) return StatusCode(404, "Vehicle must correspond to a vehicle type with a matching vehicleTypeId");
+
+                dbInteraction.VehicleInventories.Add(newVehicle);
+                dbInteraction.SaveChanges();
+                return Ok(newVehicle);
+            }
+        }
+
+        // POST /Admin/PostNewVehicleType
+        [HttpPost("[action]")]
+        public IActionResult PostNewVehicleType([FromBody] VehicleType newType) 
+        {
+            newType.VehicleTypeId = 0;
+            using (CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext()) 
+            { 
+                dbInteraction.VehicleTypes.Add(newType);
+                dbInteraction.SaveChanges();
+                return Ok();
+            }
+        }
+
+
+        // PUT Admin/UpdateUser
+        [HttpPut("[action]")]
+        public IActionResult UpdateUser([FromBody] User updatedUser)
+        {
+            using (CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext()) 
+            {
+                User originalUser = dbInteraction.Users.FirstOrDefault(user => user.UserId == updatedUser.UserId);
                 if (originalUser != null) 
                 {
                     updatedUser.UserId = originalUser.UserId;
@@ -58,17 +102,24 @@ namespace BackEnd.Controllers
                 }
                 else
                 {
-                    return NoContent();
+                    return StatusCode(404, "User does not exist");
                 }
             }
         }
 
-        [HttpPut("[action]/{OrderID}")]
-        public IActionResult UpdateOrder(int OrderID, [FromBody] RentalOrderDetail updatedOrder)
+        // PUT Admin/UpdateOrder
+        [HttpPut("[action]")]
+        public IActionResult UpdateOrder([FromBody] RentalOrderDetail updatedOrder)
         {
             using (CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext())
             {
-                RentalOrderDetail originalOrder = dbInteraction.RentalOrderDetails.FirstOrDefault(order => order.OrderId == OrderID);
+                RentalOrderDetail originalOrder = dbInteraction.RentalOrderDetails.FirstOrDefault(order => order.OrderId == updatedOrder.OrderId);
+                VehicleInventory matchingVehicle = dbInteraction.VehicleInventories.FirstOrDefault(Vehicle => Vehicle.SerialNumber == updatedOrder.SerialNumber);
+                if (matchingVehicle == null) return StatusCode(404, "Update serial number must correspond to vehicle with a matching serial number");
+                
+                User matchingUser = dbInteraction.Users.FirstOrDefault(user => user.UserId == updatedOrder.UserId);
+                if (matchingUser == null) return StatusCode(404, "Updated UserID must correspond to a user with a matching UserID");
+                
                 if (originalOrder != null)
                 {
                     updatedOrder.OrderId = originalOrder.OrderId;
@@ -78,17 +129,18 @@ namespace BackEnd.Controllers
                 }
                 else
                 {
-                    return NoContent();
+                    return StatusCode(404, "Order does not exist");
                 }
             }
         }
 
-        [HttpPut("[action]/{VehicleTypeID}")]
-        public IActionResult UpdateVehicleType(int VehicleTypeID, [FromBody] VehicleType updatedVehicleType)
+        // PUT Admin/UpdateVehicleType
+        [HttpPut("[action]")]
+        public IActionResult UpdateVehicleType([FromBody] VehicleType updatedVehicleType)
         {
             using (CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext())
             {
-                VehicleType originalVehicleType = dbInteraction.VehicleTypes.FirstOrDefault(type => type.VehicleTypeId == VehicleTypeID);
+                VehicleType originalVehicleType = dbInteraction.VehicleTypes.FirstOrDefault(type => type.VehicleTypeId == updatedVehicleType.VehicleTypeId);
                 if (originalVehicleType != null)
                 {
                     updatedVehicleType.VehicleTypeId = originalVehicleType.VehicleTypeId;
@@ -98,17 +150,21 @@ namespace BackEnd.Controllers
                 }
                 else
                 {
-                    return NoContent();
+                    return StatusCode(404, "Vehicle type does not exist");
                 }
             }
         }
 
-        [HttpPut("[action]/{VehicleID}")]
-        public IActionResult UpdateVehicle(int VehicleID, [FromBody] VehicleInventory updatedVehicle)
+        // PUT Admin/UpdateVehicle
+        [HttpPut("[action]")]
+        public IActionResult UpdateVehicle([FromBody] VehicleInventory updatedVehicle)
         {
             using (CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext())
             {
-                VehicleInventory originalVehicleType = dbInteraction.VehicleInventories.FirstOrDefault(vehicle => vehicle.VehicleId == VehicleID);
+                VehicleType matchingVehicleType = dbInteraction.VehicleTypes.FirstOrDefault(type => type.VehicleTypeId == updatedVehicle.VehicleTypeId);
+                if (matchingVehicleType == null) return StatusCode(404, "Updated VehicleTypeId must correspond with a matching VehicleTypeId");
+                
+                VehicleInventory originalVehicleType = dbInteraction.VehicleInventories.FirstOrDefault(vehicle => vehicle.VehicleId == updatedVehicle.VehicleId);
                 if (originalVehicleType != null)
                 {
                     updatedVehicle.VehicleId = originalVehicleType.VehicleId;
@@ -118,16 +174,73 @@ namespace BackEnd.Controllers
                 }
                 else
                 {
-                    return NoContent();
+                    return StatusCode(404, "Vehicle does not exist");
                 }
             }
         }
-        //Need to implement delete for admin
-
-        // DELETE api/<AdminController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        
+        // DELETE /Admin/DeleteUser/<int>
+        [HttpDelete("[action],{userId}")]
+        public IActionResult DeleteUser(int userId)
         {
+            using (CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext()) 
+            {
+                 User matchingUser = dbInteraction.Users.FirstOrDefault(user => user.UserId == userId);
+
+                if (matchingUser == null) return StatusCode(404, "User doesn't exist");
+                
+                dbInteraction.Users.Remove(matchingUser);
+                dbInteraction.SaveChanges();
+                return Ok();
+            }
+        }
+
+        // DELETE /Admin/DeleterOrder/<int>
+        [HttpDelete("[action],{orderId}")]
+        public IActionResult DeleteOrder(int orderId)
+        {
+            using (CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext())
+            {
+                RentalOrderDetail matchingOrder = dbInteraction.RentalOrderDetails.FirstOrDefault(order => order.OrderId == orderId);
+
+                if (matchingOrder == null) return StatusCode(404, "Order doesn't exist");
+
+                dbInteraction.RentalOrderDetails.Remove(matchingOrder);
+                dbInteraction.SaveChanges();
+                return Ok();
+            }
+        }
+
+        // DELETE /Admin/DeleterVehicle/<int>
+        [HttpDelete("[action],{vehicleId}")]
+        public IActionResult DeleteVehicle(int vehicleId)
+        {
+            using (CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext())
+            {
+                VehicleInventory matchingVehicle = dbInteraction.VehicleInventories.FirstOrDefault(vehicle => vehicle.VehicleId == vehicleId);
+
+                if (matchingVehicle == null) return StatusCode(404, "Vehicle doesn't exist");
+
+                dbInteraction.VehicleInventories.Remove(matchingVehicle);
+                dbInteraction.SaveChanges();
+                return Ok();
+            }
+        }
+
+        // DELETE /Admin/DeleteVehicleType/<int>
+        [HttpDelete("[action],{vehicleTypeId}")]
+        public IActionResult DeleteVehicleType(int vehicleTypeId)
+        {
+            using (CarRentalDatabaseContext dbInteraction = new CarRentalDatabaseContext())
+            {
+                VehicleType matchingVehicleType = dbInteraction.VehicleTypes.FirstOrDefault(type => type.VehicleTypeId == vehicleTypeId);
+
+                if (matchingVehicleType == null) return StatusCode(404, "Type doesn't exist");
+
+                dbInteraction.VehicleTypes.Remove(matchingVehicleType);
+                dbInteraction.SaveChanges();
+                return Ok();
+            }
         }
     }
 }

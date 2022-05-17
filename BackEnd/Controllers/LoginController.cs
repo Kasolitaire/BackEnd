@@ -13,15 +13,17 @@ namespace BackEnd.Controllers
         [HttpGet("{loginID},{password}")]
         public IActionResult GetUserInfo(string loginID, string password)
         {
-            CarRentalDatabaseContext databaseInteraction = new CarRentalDatabaseContext();
-            User userLoginConfirmation = databaseInteraction.Users.FirstOrDefault(row => (row.Username == loginID || row.Email == loginID) && row.Password == password);
-            if (userLoginConfirmation != null)
-            {
-                return Ok(userLoginConfirmation);
-            }
-            else
-            {
-                return NotFound();
+            using (CarRentalDatabaseContext databaseInteraction = new CarRentalDatabaseContext()) 
+            { 
+                User userLoginConfirmation = databaseInteraction.Users.FirstOrDefault(row => (row.Username == loginID || row.Email == loginID) && row.Password == password);
+                if (userLoginConfirmation != null)
+                {
+                    return Ok(userLoginConfirmation);
+                }
+                else
+                {
+                    return StatusCode(404, "Wrong Credentials");
+                }
             }
         }
     }
